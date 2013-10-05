@@ -1,8 +1,8 @@
 {
-    "name": "arcavias/ext-zend",
-    "description": "Arcavias extension for utilizing Zend Framework components",
+	"name": "arcavias/ext-zend",
+	"description": "Arcavias extension for utilizing Zend Framework components",
 	"homepage": "http://www.arcavias.com/en",
-    "type": "arcavias-extension",
+	"type": "arcavias-extension",
 	"license": "LGPL-3.0",
 	"support": {
 		"source": "https://github.com/Arcavias/ext-zend",
@@ -10,15 +10,15 @@
 		"forum": "https://forum.arcavias.com",
 		"wiki": "https://docs.arcavias.com"
 	},
-    "require": {
-        "arcavias/extension-installer": "dev-master"
-    },
-    "autoload": {
-        "psr-0": {
+	"require": {
+		"arcavias/extension-installer": "dev-master"
+	},
+	"autoload": {
+		"psr-0": {
 			"MW": "lib/custom/src"
-        },
+		},
 		"classmap": [
 			"lib/custom/src"
 		]
-    }
+	}
 }
