@@ -1,0 +1,16 @@
+language: php
+php:
+  - "5.4"
+  - "5.3"
+before_script:
+  - git clone --depth=50 --branch=master git://github.com/Arcavias/arcavias-core.git ../arcavias-core
+  - git clone --depth=50 --branch=master https://github.com/digital-canvas/zend-framework.git ../zendlib
+  - cd ../arcavias-core
+  - mv ../ext-zend ext/zend
+  - wget http://getcomposer.org/composer.phar
+  - php composer.phar install
+  - pear channel-discover pear.phing.info
+  - pear install phing/phing
+  - pear install pear/PHP_CodeSniffer
+  - phpenv rehash
+script: "phing setup && phing -Ddir=ext/zend -Dzenddir=`pwd`/../zendlib/library testext && phing -Ddir=ext/zend checkext"
