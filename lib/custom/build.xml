@@ -4,7 +4,7 @@
 	
 	<target name="test" description="Executes unit tests">
 		<echo msg="Executing unit tests" />
-		<exec command="phpunit -d memory_limit=-1 --include-path ${coredir} --configuration=phpunit.xml MW/"
+		<exec command="phpunit -d memory_limit=-1 --include-path ${coredir}:${zenddir} --configuration=phpunit.xml MW/"
 			  dir="tests" checkreturn="true" logoutput="true"/>
 	</target>
 	
@@ -14,7 +14,7 @@
 	<target name="coverage" description="Generates code coverage report">
 		<echo msg="Generating code coverage report" />
 		<delete dir="tests/coverage" quiet="true" failonerror="false" />
-		<exec command="phpunit -d memory_limit=-1 --include-path ${coredir} --configuration=phpunit-coverage.xml ."
+		<exec command="phpunit -d memory_limit=-1 --include-path ${coredir}:${zenddir} --configuration=phpunit-coverage.xml ."
 			  dir="tests" checkreturn="true" logoutput="true"/>
 	</target>
 	
