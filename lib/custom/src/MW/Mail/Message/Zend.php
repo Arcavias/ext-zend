@@ -156,7 +156,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	/**
 	 * Adds an attachment to the message.
 	 *
-	 * @param string $data Binary or string @author nose
+	 * @param string $data Binary or string
 	 * @param string $mimetype Mime type of the attachment (e.g. "text/plain", "application/octet-stream", etc.)
 	 * @param string|null $filename Name of the attached file (or null if inline disposition is used)
 	 * @param string $disposition Type of the disposition ("attachment" or "inline")
@@ -169,6 +169,27 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 
 		$this->_object->addAttachment( $part );
 		return $this;
+	}
+
+
+	/**
+	 * Embeds an attachment into the message and returns its reference.
+	 *
+	 * @param string $data Binary or string
+	 * @param string $mimetype Mime type of the attachment (e.g. "text/plain", "application/octet-stream", etc.)
+	 * @param string|null $filename Name of the attached file
+	 * @return string Content ID for referencing the attachment in the HTML body
+	 */
+	public function embedAttachment( $data, $mimetype, $filename )
+	{
+		$enc = Zend_Mime::ENCODING_BASE64;
+		$disposition = Zend_Mime::DISPOSITION_INLINE;
+		$part = $this->_object->createAttachment( $data, $mimetype, $disposition, $enc, $filename );
+
+		$part->id = md5( $filename . mt_rand() );
+
+		$this->_object->addAttachment( $part );
+		return 'cid:' . $part->id;
 	}
 
 
