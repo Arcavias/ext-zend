@@ -135,13 +135,31 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 
 		$this->_mock->expects( $this->once() )->method( 'createAttachment' )
 			->with( $this->stringContains( 'test' ), $this->stringContains( 'text/plain' ),
-				$this->stringContains( 'test.txt' ), $this->stringContains( 'inline' ) )
+				$this->stringContains( 'inline' ), $this->stringContains( Zend_Mime::ENCODING_BASE64 ),
+				$this->stringContains( 'test.txt' ) )
 			->will( $this->returnValue( $partMock ) );
 
 		$this->_mock->expects( $this->once() )->method( 'addAttachment' );
 
 		$result = $this->_object->addAttachment( 'test', 'text/plain', 'test.txt', 'inline' );
 		$this->assertSame( $this->_object, $result );
+	}
+
+
+	public function testEmbedAttachment()
+	{
+		$partMock = $this->getMockBuilder( 'Zend_Mime_Part' )->disableOriginalConstructor()->getMock();
+
+		$this->_mock->expects( $this->once() )->method( 'createAttachment' )
+			->with( $this->stringContains( 'test' ), $this->stringContains( 'text/plain' ),
+				$this->stringContains( 'inline' ), $this->stringContains( Zend_Mime::ENCODING_BASE64 ),
+				$this->stringContains( 'test.txt' ) )
+			->will( $this->returnValue( $partMock ) );
+
+		$this->_mock->expects( $this->once() )->method( 'addAttachment' );
+
+		$result = $this->_object->embedAttachment( 'test', 'text/plain', 'test.txt' );
+		$this->assertType( 'string', $result );
 	}
 
 
