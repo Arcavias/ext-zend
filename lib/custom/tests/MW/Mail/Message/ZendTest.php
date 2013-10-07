@@ -159,7 +159,7 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 		$this->_mock->expects( $this->once() )->method( 'addAttachment' );
 
 		$result = $this->_object->embedAttachment( 'test', 'text/plain', 'test.txt' );
-		$this->assertType( 'string', $result );
+		$this->assertInternalType( 'string', $result );
 	}
 
 
