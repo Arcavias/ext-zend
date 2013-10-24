@@ -167,7 +167,6 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 		$enc = Zend_Mime::ENCODING_BASE64;
 		$part = $this->_object->createAttachment( $data, $mimetype, $disposition, $enc, $filename );
 
-		$this->_object->addAttachment( $part );
 		return $this;
 	}
 
@@ -188,7 +187,6 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 
 		$part->id = md5( $filename . mt_rand() );
 
-		$this->_object->addAttachment( $part );
 		return 'cid:' . $part->id;
 	}
 
