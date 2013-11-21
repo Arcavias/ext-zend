@@ -139,8 +139,6 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 				$this->stringContains( 'test.txt' ) )
 			->will( $this->returnValue( $partMock ) );
 
-		$this->_mock->expects( $this->once() )->method( 'addAttachment' );
-
 		$result = $this->_object->addAttachment( 'test', 'text/plain', 'test.txt', 'inline' );
 		$this->assertSame( $this->_object, $result );
 	}
@@ -155,8 +153,6 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 				$this->stringContains( 'inline' ), $this->stringContains( Zend_Mime::ENCODING_BASE64 ),
 				$this->stringContains( 'test.txt' ) )
 			->will( $this->returnValue( $partMock ) );
-
-		$this->_mock->expects( $this->once() )->method( 'addAttachment' );
 
 		$result = $this->_object->embedAttachment( 'test', 'text/plain', 'test.txt' );
 		$this->assertInternalType( 'string', $result );
