@@ -49,9 +49,16 @@ class MW_View_Helper_Url_Zend
 	{
 		$paramList = array( 'controller' => $controller, 'action' => $action );
 
-		// Slashes in URL parameters confuses the router
-		foreach( $params as $key => $value ) {
+
+		foreach( $params as $key => $value )
+		{
+			// Slashes in URL parameters confuses the router
 			$paramList[$key] = str_replace( '/', '', $value );
+
+			// Arrays are not supported
+			if( is_array( $value ) ) {
+				$paramList[$key] = implode( ' ', $value );
+			}
 		}
 
 		if( !empty( $trailing ) ) {
