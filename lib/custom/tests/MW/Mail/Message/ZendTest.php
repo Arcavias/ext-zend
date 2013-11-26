@@ -208,12 +208,12 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 if( class_exists( 'Zend_Mail_Transport_Abstract' ) )
 {
 	class Test_Zend_Mail_Transport_Memory extends Zend_Mail_Transport_Abstract
-	{
+{
 		public $message;
 
-	    protected function _sendMail()
-	    {
-	    	$this->message = $this->header . $this->EOL . $this->body;
-	    }
+		protected function _sendMail()
+		{
+			$this->message = $this->header . "\r\n" . $this->body;
+		}
 	}
 }
