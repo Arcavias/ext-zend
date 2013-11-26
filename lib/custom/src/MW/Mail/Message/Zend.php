@@ -17,6 +17,7 @@
 class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 {
 	private $_object;
+	private $_parts = array();
 
 
 	/**
@@ -148,7 +149,14 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function setBodyHtml( $message )
 	{
-		$this->_object->setBodyHtml( $message );
+		$part = new Zend_Mime_Part( $message );
+
+		$part->charset = $this->_object->getCharset();
+		$part->encoding = Zend_Mime::ENCODING_QUOTEDPRINTABLE;
+		$part->disposition = Zend_Mime::DISPOSITION_INLINE;
+		$part->type = Zend_Mime::TYPE_HTML;
+
+		$this->_parts['html'] = $part;
 		return $this;
 	}
 
@@ -181,11 +189,22 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function embedAttachment( $data, $mimetype, $filename )
 	{
-		$enc = Zend_Mime::ENCODING_BASE64;
-		$disposition = Zend_Mime::DISPOSITION_INLINE;
-		$part = $this->_object->createAttachment( $data, $mimetype, $disposition, $enc, $filename );
+		$cnt = 0;
+		$newfile = $filename;
 
-		$part->id = md5( $filename . mt_rand() );
+		while( isset( $this->_parts[$newfile] ) ) {
+			$newfile = ++$cnt . '_' . $filename;
+		}
+
+		$part = new Zend_Mime_Part( $data );
+
+		$part->disposition = Zend_Mime::DISPOSITION_INLINE;
+		$part->encoding = Zend_Mime::ENCODING_BASE64;
+		$part->filename = $newfile;
+		$part->type = $mimetype;
+		$part->id = md5( $newfile . mt_rand() );
+
+		$this->_parts[$newfile] = $part;
 
 		return 'cid:' . $part->id;
 	}
@@ -198,6 +217,21 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function getObject()
 	{
+		if( !empty( $this->_parts ) )
+		{
+			$msg = new Zend_Mime_Message();
+			$msg->setParts( $this->_parts );
+
+			// create html body (text and maybe embedded), modified afterwards to set it to multipart/related
+			$this->_object->setBodyHtml( $msg->generateMessage() );
+
+			$related = $this->_object->getBodyHtml();
+			$related->type = Zend_Mime::MULTIPART_RELATED;
+			$related->encoding = Zend_Mime::ENCODING_8BIT;
+			$related->disposition = null;
+			$related->charset = null;
+		}
+
 		return $this->_object;
 	}
 
