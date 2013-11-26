@@ -122,9 +122,15 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 	public function testSetBodyHtml()
 	{
 		$this->_mock->expects( $this->once() )->method( 'setBodyHtml' )
-			->with( $this->stringContains( 'test' ) );
+			->with( $this->stringContains( 'test' ) )
+			->will( $this->returnValue( new stdClass() ) );
+
+		$this->_mock->expects( $this->once() )->method( 'getBodyHtml' )
+			->will( $this->returnValue( new stdClass() ) );
 
 		$result = $this->_object->setBodyHtml( 'test' );
+		$mail = $this->_object->getObject();
+
 		$this->assertSame( $this->_object, $result );
 	}
 
@@ -148,19 +154,67 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 	{
 		$partMock = $this->getMockBuilder( 'Zend_Mime_Part' )->disableOriginalConstructor()->getMock();
 
-		$this->_mock->expects( $this->once() )->method( 'createAttachment' )
-			->with( $this->stringContains( 'test' ), $this->stringContains( 'text/plain' ),
-				$this->stringContains( 'inline' ), $this->stringContains( Zend_Mime::ENCODING_BASE64 ),
-				$this->stringContains( 'test.txt' ) )
-			->will( $this->returnValue( $partMock ) );
+		$this->_mock->expects( $this->once() )->method( 'getBodyHtml' )
+			->will( $this->returnValue( new stdClass() ) );
 
 		$result = $this->_object->embedAttachment( 'test', 'text/plain', 'test.txt' );
+		$mail = $this->_object->getObject();
+
 		$this->assertInternalType( 'string', $result );
+	}
+
+
+	public function testEmbedAttachmentMultiple()
+	{
+		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
+
+		$object->setBody( 'text body' );
+		$object->embedAttachment( 'test', 'text/plain', 'test.txt' );
+		$object->embedAttachment( 'test', 'text/plain', 'test.txt' );
+
+		$transport = new Test_Zend_Mail_Transport_Memory();
+		$object->getObject()->send( $transport );
+
+		$exp = '#Content-Disposition: inline; filename="test.txt".*Content-Disposition: inline; filename="1_test.txt"#smu';
+		$this->assertRegExp( $exp, $transport->message );
 	}
 
 
 	public function testGetObject()
 	{
 		$this->assertInstanceOf( 'Zend_Mail', $this->_object->getObject() );
+	}
+
+
+	public function testGenerateMailFull()
+	{
+		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
+
+		$object->setBody( 'text body' );
+		$object->setBodyHtml( 'html body' );
+		$object->embedAttachment( 'embedded-data', 'text/plain', 'embedded.txt' );
+		$object->addAttachment( 'attached-data', 'text/plain', 'attached.txt' );
+
+		$transport = new Test_Zend_Mail_Transport_Memory();
+		$object->getObject()->send( $transport );
+
+		$exp = '#Content-Type: multipart/mixed;.*Content-Type: multipart/alternative;.*Content-Type: text/plain;.*Content-Type: multipart/related.*Content-Type: text/html;.*Content-Type: text/plain.*Content-Type: text/plain#smu';
+		$this->assertRegExp( $exp, $transport->message );
+	}
+}
+
+
+
+if( !class_exists( 'Zend_Mail_Transport_Abstract' ) ) {
+	return;
+}
+
+class Test_Zend_Mail_Transport_Memory extends Zend_Mail_Transport_Abstract
+{
+	public $message;
+
+	protected function _sendMail()
+	{
+		$this->message = $this->header . "\r\n" . $this->body;
 	}
 }
