@@ -150,14 +150,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function setBodyHtml( $message )
 	{
-		$part = new Zend_Mime_Part( $message );
-
-		$part->charset = $this->_object->getCharset();
-		$part->encoding = Zend_Mime::ENCODING_QUOTEDPRINTABLE;
-		$part->disposition = Zend_Mime::DISPOSITION_INLINE;
-		$part->type = Zend_Mime::TYPE_HTML;
-
-		$this->_html = $part;
+		$this->_html = $message;
 		return $this;
 	}
 
@@ -218,20 +211,24 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function getObject()
 	{
-		$parts = array();
-
-		if( $this->_html !== null ) {
-			$parts = array( $this->_html );
-		}
-
-		if( !empty( $this->_embedded ) ) {
-			$parts = array_merge( $parts, $this->_embedded );
-		}
-
-		if( !empty( $parts ) )
+		if( !empty( $this->_embedded ) )
 		{
+			$parts = array();
+
+			if( $this->_html != null )
+			{
+				$part = new Zend_Mime_Part( $this->_html );
+
+				$part->charset = $this->_object->getCharset();
+				$part->encoding = Zend_Mime::ENCODING_QUOTEDPRINTABLE;
+				$part->disposition = Zend_Mime::DISPOSITION_INLINE;
+				$part->type = Zend_Mime::TYPE_HTML;
+
+				$parts = array( $part );
+			}
+
 			$msg = new Zend_Mime_Message();
-			$msg->setParts( $parts );
+			$msg->setParts( array_merge( $parts, $this->_embedded ) );
 
 			// create html body (text and maybe embedded), modified afterwards to set it to multipart/related
 			$this->_object->setBodyHtml( $msg->generateMessage() );
@@ -242,6 +239,10 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 			$related->boundary = $msg->getMime()->boundary();
 			$related->disposition = null;
 			$related->charset = null;
+		}
+		else if( $this->_html != null )
+		{
+			$this->_object->setBodyHtml( $this->_html );
 		}
 
 		return $this->_object;
