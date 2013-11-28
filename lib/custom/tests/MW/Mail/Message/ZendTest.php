@@ -121,13 +121,6 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 
 	public function testSetBodyHtml()
 	{
-		$this->_mock->expects( $this->once() )->method( 'setBodyHtml' )
-			->with( $this->stringContains( 'test' ) )
-			->will( $this->returnValue( new stdClass() ) );
-
-		$this->_mock->expects( $this->once() )->method( 'getBodyHtml' )
-			->will( $this->returnValue( new stdClass() ) );
-
 		$result = $this->_object->setBodyHtml( 'test' );
 		$mail = $this->_object->getObject();
 
@@ -186,14 +179,44 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 	}
 
 
-	public function testGenerateMailFull()
+	public function testGenerateMailAlternative()
 	{
 		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
 
 		$object->setBody( 'text body' );
-		$object->embedAttachment( 'embedded-data', 'text/plain', 'embedded.txt' );
-		$object->addAttachment( 'attached-data', 'text/plain', 'attached.txt' );
 		$object->setBodyHtml( 'html body' );
+
+		$transport = new Test_Zend_Mail_Transport_Memory();
+		$object->getObject()->send( $transport );
+
+		$exp = '#Content-Type: multipart/alternative;.*Content-Type: text/plain;.*Content-Type: text/html;#smu';
+		$this->assertRegExp( $exp, $transport->message );
+	}
+
+
+	public function testGenerateMailRelated()
+	{
+		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
+
+		$object->embedAttachment( 'embedded-data', 'text/plain', 'embedded.txt' );
+		$object->setBodyHtml( 'html body' );
+
+		$transport = new Test_Zend_Mail_Transport_Memory();
+		$object->getObject()->send( $transport );
+
+		$exp = '#Content-Type: multipart/related.*Content-Type: text/html;.*Content-Type: text/plain#smu';
+		$this->assertRegExp( $exp, $transport->message );
+	}
+
+
+	public function testGenerateMailFull()
+	{
+		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
+
+		$object->addAttachment( 'attached-data', 'text/plain', 'attached.txt' );
+		$object->embedAttachment( 'embedded-data', 'text/plain', 'embedded.txt' );
+		$object->setBodyHtml( 'html body' );
+		$object->setBody( 'text body' );
 
 		$transport = new Test_Zend_Mail_Transport_Memory();
 		$object->getObject()->send( $transport );
