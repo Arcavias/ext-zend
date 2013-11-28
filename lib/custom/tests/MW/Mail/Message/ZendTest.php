@@ -191,9 +191,9 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 		$object = new MW_Mail_Message_Zend( new Zend_Mail() );
 
 		$object->setBody( 'text body' );
-		$object->setBodyHtml( 'html body' );
 		$object->embedAttachment( 'embedded-data', 'text/plain', 'embedded.txt' );
 		$object->addAttachment( 'attached-data', 'text/plain', 'attached.txt' );
+		$object->setBodyHtml( 'html body' );
 
 		$transport = new Test_Zend_Mail_Transport_Memory();
 		$object->getObject()->send( $transport );

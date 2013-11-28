@@ -17,7 +17,8 @@
 class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 {
 	private $_object;
-	private $_parts = array();
+	private $_embedded = array();
+	private $_html;
 
 
 	/**
@@ -156,7 +157,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 		$part->disposition = Zend_Mime::DISPOSITION_INLINE;
 		$part->type = Zend_Mime::TYPE_HTML;
 
-		$this->_parts['html'] = $part;
+		$this->_html = $part;
 		return $this;
 	}
 
@@ -192,7 +193,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 		$cnt = 0;
 		$newfile = $filename;
 
-		while( isset( $this->_parts[$newfile] ) ) {
+		while( isset( $this->_embedded[$newfile] ) ) {
 			$newfile = ++$cnt . '_' . $filename;
 		}
 
@@ -204,7 +205,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 		$part->type = $mimetype;
 		$part->id = md5( $newfile . mt_rand() );
 
-		$this->_parts[$newfile] = $part;
+		$this->_embedded[$newfile] = $part;
 
 		return 'cid:' . $part->id;
 	}
@@ -217,10 +218,20 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 	 */
 	public function getObject()
 	{
-		if( !empty( $this->_parts ) )
+		$parts = array();
+
+		if( $this->_html !== null ) {
+			$parts = array( $this->_html );
+		}
+
+		if( !empty( $this->_embedded ) ) {
+			$parts = array_merge( $parts, $this->_embedded );
+		}
+
+		if( !empty( $parts ) )
 		{
 			$msg = new Zend_Mime_Message();
-			$msg->setParts( $this->_parts );
+			$msg->setParts( $parts );
 
 			// create html body (text and maybe embedded), modified afterwards to set it to multipart/related
 			$this->_object->setBodyHtml( $msg->generateMessage() );
@@ -228,6 +239,7 @@ class MW_Mail_Message_Zend implements MW_Mail_Message_Interface
 			$related = $this->_object->getBodyHtml();
 			$related->type = Zend_Mime::MULTIPART_RELATED;
 			$related->encoding = Zend_Mime::ENCODING_8BIT;
+			$related->boundary = $msg->getMime()->boundary();
 			$related->disposition = null;
 			$related->charset = null;
 		}
