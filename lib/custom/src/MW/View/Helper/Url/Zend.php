@@ -19,6 +19,7 @@ class MW_View_Helper_Url_Zend
 	implements MW_View_Helper_Interface
 {
 	private $_router;
+	private $_serverUrl;
 
 
 	/**
@@ -26,12 +27,14 @@ class MW_View_Helper_Url_Zend
 	 *
 	 * @param MW_View_Interface $view View instance with registered view helpers
 	 * @param Zend_Controller_Router_Interface $router Zend Router implementation
+	 * @param string $serverUrl Url of the server including scheme, host and port
 	 */
-	public function __construct( $view, Zend_Controller_Router_Interface $router )
+	public function __construct( $view, Zend_Controller_Router_Interface $router, $serverUrl )
 	{
 		parent::__construct( $view );
 
 		$this->_router = $router;
+		$this->_serverUrl = $serverUrl;
 	}
 
 
@@ -43,9 +46,10 @@ class MW_View_Helper_Url_Zend
 	 * @param string|null $action Name of the action which should be part of the link (if any)
 	 * @param array $params Associative list of parameters that should be part of the URL
 	 * @param array $trailing Trailing URL parts that are not relevant to identify the resource (for pretty URLs)
+	 * @param array $config Additional configuration parameter per URL
 	 * @return string Complete URL that can be used in the template
 	 */
-	public function transform( $target = null, $controller = null, $action = null, array $params = array(), array $trailing = array() )
+	public function transform( $target = null, $controller = null, $action = null, array $params = array(), array $trailing = array(), array $config = array() )
 	{
 		$paramList = array( 'controller' => $controller, 'action' => $action );
 
@@ -65,6 +69,12 @@ class MW_View_Helper_Url_Zend
 			$paramList['trailing'] = str_replace( '/', '-', join( '-', $trailing ) );
 		}
 
-		return $this->_router->assemble( $paramList, $target, true );
+		$url = $this->_router->assemble( $paramList, $target, true );
+
+		if( isset( $config['absoluteUri'] ) ) {
+			$url = $this->_serverUrl . $url;
+		}
+
+		return $url;
 	}
 }
