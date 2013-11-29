@@ -27,7 +27,7 @@ class MW_View_Helper_Url_ZendTest extends MW_Unittest_Testcase
 		$view = new MW_View_Default();
 		$this->_router = $this->getMock( 'Zend_Controller_Router_Rewrite' );
 
-		$this->_object = new MW_View_Helper_Url_Zend( $view, $this->_router );
+		$this->_object = new MW_View_Helper_Url_Zend( $view, $this->_router, 'https://localhost:80' );
 	}
 
 
@@ -77,5 +77,16 @@ class MW_View_Helper_Url_ZendTest extends MW_Unittest_Testcase
 			->will( $this->returnValue( 'testurl' ) );
 
 		$this->assertEquals( 'testurl', $this->_object->transform( null, null, null, array(), array( 'a', 'b' ) ) );
+	}
+
+
+	public function testTransformAbsolute()
+	{
+		$this->_router->expects( $this->once() )->method( 'assemble' )
+			->will( $this->returnValue( '/testurl' ) );
+
+		$options = array( 'absoluteUri' => true );
+		$result = $this->_object->transform( null, null, null, array(), array(), $options );
+		$this->assertEquals( 'https://localhost:80/testurl', $result );
 	}
 }
