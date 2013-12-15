@@ -89,6 +89,16 @@ class MW_Mail_Message_ZendTest extends MW_Unittest_Testcase
 	}
 
 
+	public function testAddHeader()
+	{
+		$this->_mock->expects( $this->once() )->method( 'addHeader' )
+			->with( $this->stringContains( 'test' ), $this->stringContains( 'value' ) );
+
+		$result = $this->_object->addHeader( 'test', 'value' );
+		$this->assertSame( $this->_object, $result );
+	}
+
+
 	public function testSetSender()
 	{
 		$this->_mock->expects( $this->once() )->method( 'setFrom' )
