@@ -107,6 +107,24 @@ class MW_Translation_Zend
 
 
 	/**
+	 * Returns all locale string of the given domain.
+	 *
+	 * @param string $domain Translation domain
+	 * @return array Associative list with original string as key and associative list with index => translation as value
+	 */
+	public function getAll( $domain )
+	{
+		$messages = array();
+
+		foreach( $this->_getTranslations( $domain ) as $object ) {
+			$messages = $messages + $object->getMessages();
+		}
+
+		return $messages;
+	}
+
+
+	/**
 	 * Returns the current locale string.
 	 *
 	 * @return string ISO locale string

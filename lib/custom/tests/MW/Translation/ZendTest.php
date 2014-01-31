@@ -152,4 +152,29 @@ class MW_Translation_ZendTest extends MW_Unittest_Testcase
 		$object = new MW_Translation_Zend( $translationSources, 'gettext', 'ka_GE' );
 		$this->assertEquals( 'KFZ', $object->dn( 'testDomain', 'Car', 'Cars', 25 ) );
 	}
+
+
+	public function testGetAll()
+	{
+		$ds = DIRECTORY_SEPARATOR;
+
+		$translationSources = array(
+			'testDomain' => array(
+				dirname(__FILE__) . $ds . 'testfiles' . $ds . 'case1',
+				dirname(__FILE__) . $ds . 'testfiles' . $ds . 'case2',
+			),
+		);
+
+		$object = new MW_Translation_Zend( $translationSources, 'gettext', 'ka_GE' );
+		$result = $object->getAll( 'testDomain' );
+
+		$this->assertArrayHasKey( 'Car', $result );
+		$this->assertEquals( 'KFZ', $result['Car'][0] );
+		$this->assertEquals( 'KFZs', $result['Car'][1] );
+		$this->assertArrayHasKey( 'File', $result );
+		$this->assertEquals( 'Datei mehr', $result['File'][0] );
+		$this->assertEquals( 'Dateien mehr', $result['File'][1] );
+		$this->assertArrayHasKey( 'Update', $result );
+		$this->assertEquals( 'Neue Version', $result['Update'] );
+	}
 }
