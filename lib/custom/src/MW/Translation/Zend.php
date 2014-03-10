@@ -18,7 +18,6 @@ class MW_Translation_Zend
 	extends MW_Translation_Abstract
 	implements MW_Translation_Interface
 {
-	private $_locale;
 	private $_options;
 	private $_translationSources;
 	private $_translations = array();
@@ -39,12 +38,12 @@ class MW_Translation_Zend
 	 */
 	public function __construct( array $translationSources, $adapter, $locale, array $options = array() )
 	{
-		$this->_translationSources = $translationSources;
+		parent::__construct( $locale );
 
-		$this->_locale = $locale;
 		$this->_options = $options;
 		$this->_options['adapter'] = (string) $adapter;
 		$this->_options['locale'] = (string) $locale;
+		$this->_translationSources = $translationSources;
 	}
 
 
@@ -63,7 +62,7 @@ class MW_Translation_Zend
 			foreach( $this->_getTranslations( $domain ) as $object )
 			{
 				if( $object->isTranslated( $string ) === true ) {
-					return $object->translate( $string, $this->_locale );
+					return $object->translate( $string, $this->getLocale() );
 				}
 			}
 		}
@@ -92,13 +91,13 @@ class MW_Translation_Zend
 			foreach( $this->_getTranslations( $domain ) as $object )
 			{
 				if( $object->isTranslated( $singular ) === true ) {
-					return $object->plural( $singular, $plural, $number, $this->_locale );
+					return $object->plural( $singular, $plural, $number, $this->getLocale() );
 				}
 			}
 		}
 		catch( Exception $e ) { ; }
 
-		if( $this->_getPluralIndex( $number, $this->_locale ) > 0 ) {
+		if( $this->_getPluralIndex( $number, $this->getLocale() ) > 0 ) {
 			return (string) $plural;
 		}
 
@@ -125,17 +124,6 @@ class MW_Translation_Zend
 
 
 	/**
-	 * Returns the current locale string.
-	 *
-	 * @return string ISO locale string
-	 */
-	public function getLocale()
-	{
-		return $this->_locale;
-	}
-
-
-	/**
 	 * Returns the initialized Zend translation object which contains the translations.
 	 *
 	 * @param string $domain Translation domain
@@ -153,7 +141,7 @@ class MW_Translation_Zend
 			}
 
 			// Reverse locations so the former gets not overwritten by the later
-			$locations = array_reverse( $this->_getTranslationFileLocations( $this->_translationSources[$domain], $this->_locale ) );
+			$locations = array_reverse( $this->_getTranslationFileLocations( $this->_translationSources[$domain], $this->getLocale() ) );
 			$options = $this->_options;
 
 			foreach( $locations as $location )
