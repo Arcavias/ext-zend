@@ -10,4 +10,4 @@ before_script:
   - cd ../arcavias-core
   - mv ../ext-zend ext/zend
   - composer install || sleep 60 && composer install
-script: "phing -Ddir=ext/zend -Dzenddir=`pwd`/../zendlib/library testext && phing -Ddir=ext/zend checkext"
+script: "vendor/bin/phing -Ddir=ext/zend -Dzenddir=`pwd`/../zendlib/library testext && vendor/bin/phing -Ddir=ext/zend checkext"
